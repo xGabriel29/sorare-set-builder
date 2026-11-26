@@ -1,0 +1,13 @@
+{
+  "users": ["gabizaooo"],
+  "days": 8,
+  "editions": {
+    "divination_standard_base":   {"label": "Standard",  "tier": "STANDARD",  "bonus": 0},
+    "divination_shiny_base":      {"label": "Shiny",     "tier": "SHINY",     "bonus": 5},
+    "divination_shiny_variant_1": {"label": "Shiny",     "tier": "SHINY",     "bonus": 15},
+    "divination_holo_base":       {"label": "Holo",      "tier": "HOLO",      "bonus": 10},
+    "divination_holo_variant_1":  {"label": "Holo",      "tier": "HOLO",      "bonus": 20},
+    "divination_holo_variant_2":  {"label": "Holo",      "tier": "HOLO",      "bonus": 25},
+    "divination_full_art_base":   {"label": "Legendary", "tier": "LEGENDARY", "bonus": 30}
+  }
+}
