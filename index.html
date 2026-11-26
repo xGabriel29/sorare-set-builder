@@ -61,10 +61,30 @@ input[type=range]{accent-color:var(--g);width:100%;min-height:28px}
 .dpf button{border:1px solid var(--line);background:#0f1113;border-radius:8px;min-height:34px;padding:0 12px;font-family:Oswald;font-size:12px;text-transform:uppercase}
 .dpf button:hover{border-color:var(--g)}
 .cnt{font-family:Oswald;font-size:11px;color:var(--mut);font-weight:500}
+.card.full{display:block;padding:0;overflow:hidden;min-height:0;text-align:center}
+.cimg{position:relative;aspect-ratio:.66;background:#0f1113}
+.cimg>.pic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cimg .cpos{top:4px;left:4px;background:#000b;color:#fff;padding:0 4px;border-radius:4px;z-index:1}
+.cimg .x{top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#000b;color:#fff;z-index:1;font-size:14px}
+.cimg .cap{position:absolute;right:4px;bottom:4px;z-index:1}
+.cbon{position:absolute;left:4px;bottom:6px;font-family:Oswald;font-size:11px;font-weight:600;background:var(--gold);color:#1b1404;border-radius:8px;padding:0 5px}
+.noimg{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px}
+.noimg img{width:54px;height:54px;border-radius:50%;object-fit:cover;background:#22272c}
+.noimg b{font-size:12px;line-height:1.1;overflow-wrap:anywhere}
+.cst,.cgm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px 1px;padding:5px 2px;line-height:1.1}
+.cgm{grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);background:#111417}
+.cst small,.cgm small{display:block;font-family:Oswald;font-size:9px;color:var(--mut);letter-spacing:.02em}
+.cst b,.cgm b{font-family:Oswald;font-size:12px;font-weight:600;white-space:nowrap}
+.cst b.pp{display:inline-block;background:var(--g);color:#06170c;border-radius:8px;padding:0 6px}
+.vs{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:10px;color:var(--mut)}
+.vs img{width:20px;height:20px;object-fit:contain}
+.vs .dot{margin-right:3px}
+.nm .av{width:26px;height:26px;border-radius:50%;object-fit:cover;background:#22272c;flex:none}
+button.card{min-height:250px}
 .ctime{font-family:Oswald;font-size:11px;color:var(--c)}
 details.adv{margin-top:12px;border-top:1px solid var(--line);padding-top:10px}
 details summary{cursor:pointer;font-family:Oswald;font-size:15px;color:#cfd5db;min-height:32px}
-.main{display:grid;grid-template-columns:minmax(360px,500px) minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
+.main{display:grid;grid-template-columns:minmax(380px,580px) minmax(0,1fr);gap:14px;margin-top:14px;align-items:start}
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;justify-content:space-between;margin-bottom:10px}
 .bar .sum{font-size:14px;color:var(--mut)}
 .bar .sum b{font-family:Oswald;font-size:20px;color:var(--g)}
@@ -141,7 +161,7 @@ tr.used{opacity:.42}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 .empty-t{padding:30px;text-align:center;color:var(--mut)}
 @media(max-width:1080px){.main{grid-template-columns:1fr}}
-@media(max-width:600px){.per{grid-column:auto}.tag{display:none}.tst>*{padding:2px 5px}.card{min-height:112px;padding-inline:3px}.cn{font-size:12px}}
+@media(max-width:600px){.cards{grid-template-columns:repeat(3,minmax(0,1fr))}.per{grid-column:auto}.tag{display:none}.tst>*{padding:2px 5px}.card{min-height:112px;padding-inline:3px}.cn{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.meter i,#toast{transition:none}}
 </style>
 </head>
@@ -268,7 +288,7 @@ const MATCHES=DATA.games.map(g=>{
     if(o.line!=null&&o.pOver!=null){let lo=.3,hi=7;for(let i=0;i<40;i++){const l=(lo+hi)/2;(pOverL(l,o.line)<o.pOver)?lo=l:hi=l}L=(lo+hi)/2}}
   let a=.05,b=.95;for(let i=0;i<40;i++){const h=(a+b)/2;(pWin(L*h,L*(1-h))<ph)?a=h:b=h}
   const h=(a+b)/2;
-  return {id:g.id,lg:g.lg,home:g.home.sn||g.home.n,away:g.away.sn||g.away.n,hs:g.home.s,as:g.away.s,hasOdds:!!o,
+  return {id:g.id,lg:g.lg,home:g.home.sn||g.home.n,away:g.away.sn||g.away.n,hs:g.home.s,as:g.away.s,hpic:g.home.pic,apic:g.away.pic,hasOdds:!!o,
     t:`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`,
     date:pad2(d.getDate())+'.'+pad2(d.getMonth()+1),time:pad2(d.getHours())+':'+pad2(d.getMinutes()),wd:WD[d.getDay()],
     xgH:L*h,xgA:L*(1-h),pH:ph,pD:pd,pA:pa};
@@ -287,7 +307,7 @@ for(const d of DATA.players){
     const played5=d.l5.filter(x=>x>0).length;
     const p={id:d.s+'@'+m.id,slug:d.s,name:d.n,pos:d.p,club:home?m.home:m.away,opp:home?m.away:m.home,home,match:m,
       pStart:clamp(pStart,0,1),pSubIn,src,doubt:d.inj||d.sus,inj:d.inj,sus:d.sus,last5:d.l5,l5:d.a5||0,
-      aa:[played5?d.aa5:null,d.aa15,d.aa40],gs:d.gs,as:d.as};
+      aa:[played5?d.aa5:null,d.aa15,d.aa40],gs:d.gs,as:d.as,av:d.av};
     PLAYERS.push(p);(PBYSLUG[d.s]=PBYSLUG[d.s]||[]).push(p);
   }
 }
@@ -348,12 +368,12 @@ simulateAll();
 
 /* cartas */
 const CARD={},ACARDS=[],GAL={};
-const ED=DATA.editions||{};
+const ED=DATA.editions||{},IMG=u=>!u?'':/^https?:/.test(u)?u:'https://assets.sorare.com/'+u;
 PLAYERS.forEach(p=>{const c={cid:'a:'+p.id,p,rar:null,bonus:0};CARD[c.cid]=c;ACARDS.push(c)});
 for(const [u,cards] of Object.entries(DATA.galleries||{})){
   GAL[u]=[];
-  for(const [cs,ps,ed] of cards){const e=ED[ed]||{tier:'STANDARD',bonus:0,label:'Standard'};
-    for(const p of PBYSLUG[ps]||[]){const c={cid:'g:'+cs+'@'+p.match.id,p,rar:e.tier,lbl:e.label,bonus:e.bonus/100};CARD[c.cid]=c;GAL[u].push(c)}}
+  for(const [cs,ps,ed,pic] of cards){const e=ED[ed]||{tier:'STANDARD',bonus:0,label:'Standard'};
+    for(const p of PBYSLUG[ps]||[]){const c={cid:'g:'+cs+'@'+p.match.id,p,rar:e.tier,lbl:e.label,bonus:e.bonus/100,pic};CARD[c.cid]=c;GAL[u].push(c)}}
 }
 const USERS=Object.keys(GAL);
 let GCARDS=GAL[USERS[0]]||[];
@@ -457,11 +477,18 @@ function renderTeams(){
     const cs=SLOTS.map((s,j)=>{
       const c=cards[j];
       if(!c)return `<button class="card ${i===S.active&&(S.pos===s||(s==='EX'&&S.pos==='ALL'))?'cur':''}" data-act="pick" data-i="${i}" data-s="${s}"><span class="cpos">${SLOTLBL[s]}</span><b>Jogador ${j+1}</b>Escolhe um ${SLOTNAME[s]}</button>`;
-      const mult=1+c.bonus+(j===k?.5:0);
-      return `<div class="card ${c.rar?'r-'+c.rar+'-b':''} ${j===k?'capt':''}"><span class="cpos">${SLOTLBL[s]}</span><button class="x" data-act="rm" data-i="${i}" data-s="${s}" aria-label="Remover ${esc(c.p.name)}">×</button>
-        <span class="cn"><b>${esc(c.p.name)}</b></span><small>${esc(c.p.club)}</small><span class="ctime">${c.p.match.wd} ${c.p.match.time}</span>
-        ${c.rar?`<span class="rar r-${c.rar}">${c.bonus?'+'+Math.round(c.bonus*100)+'%':RAR[c.rar]}</span>`:''}
-        <div class="cf"><span class="v" title="Projeção com bónus${j===k?' e capitão':''}">${(c.p.mean*mult).toFixed(0)}</span><button class="cap ${j===k?'on':''}" data-act="cap" data-i="${i}" data-s="${s}" title="Capitão: +50% somado ao bónus da carta (ex.: 10% → 60%)" aria-label="Capitão">C</button></div></div>`;
+      const mult=1+c.bonus+(j===k?.5:0),p=c.p,m=p.match,dfs=p.pos==='GK'||p.pos==='DF';
+      const capB=`<button class="cap ${j===k?'on':''}" data-act="cap" data-i="${i}" data-s="${s}" title="Capitão: +50% somado ao bónus da carta (ex.: 10% → 60%)" aria-label="Capitão">C</button>`;
+      const st=p.inj?'Les.':p.sus?'Susp.':'–';
+      return `<div class="card full ${c.rar?'r-'+c.rar+'-b':''} ${j===k?'capt':''}">
+        <div class="cimg"><div class="noimg">${p.av?`<img src="${esc(IMG(p.av))}" alt="" loading="lazy" onerror="this.remove()">`:''}<b>${esc(p.name)}</b><small>${esc(p.club)}</small></div>${c.pic?`<img class="pic" src="${esc(IMG(c.pic))}" alt="" loading="lazy" onerror="this.remove()">`:''}
+          <span class="cpos">${SLOTLBL[s]}</span><button class="x" data-act="rm" data-i="${i}" data-s="${s}" aria-label="Remover ${esc(p.name)}">×</button>${capB}
+          ${c.bonus?`<span class="cbon">+${Math.round(c.bonus*100)}%</span>`:''}</div>
+        <div class="cst"><div><small>PP</small><b class="pp">${(p.mean*mult).toFixed(0)}</b></div><div><small>Q80</small><b>${(p.q80*mult).toFixed(0)}</b></div><div><small>Tit.</small><b>${Math.round(p.pStart*100)}%</b></div>
+          <div><small>Dec.</small><b>${Math.round(p.pDec*100)}%</b></div><div><small>${dfs?'CS':'xG'}</small><b>${dfs?Math.round(p.cs*100)+'%':p.xgF.toFixed(1)}</b></div><div><small>Status</small><b>${st}</b></div></div>
+        <div class="cgm"><div><small>Data</small><b>${m.date}</b></div><div><small>Hora</small><b>${m.time}</b></div>
+          <div class="vs">${(p.home?m.apic:m.hpic)?`<img src="${esc(IMG(p.home?m.apic:m.hpic))}" alt="" loading="lazy" onerror="this.remove()">`:''}<span><i class="dot ${p.home?'h':'a'}"></i>${p.home?'Casa':'Fora'}</span></div><div><small>Vit.</small><b>${m.hasOdds?Math.round(p.winP*100)+'%':'–'}</b></div></div>
+      </div>`;
     }).join('');
     const opts=LEVELS.map((l,x)=>`<option value="${x}" ${x===t.level?'selected':''}>${x+1}</option>`).join('');
     return `<article class="team ${i===S.active?'on':''}"><header>
@@ -501,7 +528,7 @@ function renderTable(){
     const st=p.inj?'<span class="stt d">Lesionado</span>':p.sus?'<span class="stt d">Suspenso</span>':p.pStart<.6?'<span class="stt b">Rotação</span>':'–';
     return `<tr class="${u?'used':''}"><td><button class="add" data-act="add" data-cid="${esc(c.cid)}" ${u?'disabled title="Já está numa equipa"':''} aria-label="Adicionar ${esc(p.name)}">+</button></td>
     <td class="dt"><b>${p.match.date}</b><span>${p.match.time}</span></td>
-    <td><div class="nm"><span class="pos">${p.pos}</span>${esc(p.name)}${c.rar?` <span class="rar r-${c.rar}">${RAR[c.rar]}${c.bonus?' +'+Math.round(c.bonus*100)+'%':''}</span>`:''}${g.n>1?` <span class="cnt" title="${g.n} cartas iguais, ${g.free} livres">×${g.free}/${g.n}</span>`:''}</div>
+    <td><div class="nm">${p.av?`<img class="av" src="${esc(IMG(p.av))}" alt="" loading="lazy" onerror="this.remove()">`:''}<span class="pos">${p.pos}</span>${esc(p.name)}${c.rar?` <span class="rar r-${c.rar}">${RAR[c.rar]}${c.bonus?' +'+Math.round(c.bonus*100)+'%':''}</span>`:''}${g.n>1?` <span class="cnt" title="${g.n} cartas iguais, ${g.free} livres">×${g.free}/${g.n}</span>`:''}</div>
     <div class="sub"><i class="dot ${p.home?'h':'a'}"></i>${esc(p.club)} · ${p.home?'Casa':'Fora'} vs ${esc(p.opp)} · ${p.match.hasOdds?'vitória '+Math.round(p.winP*100)+'%':'sem odds'}</div></td>
     <td class="num sp" title="Fonte: ${p.src}">${Math.round(p.pStart*100)}%${p.src==='Sorare'?'':'*'}</td><td class="num"><span class="pill g">${p.mean.toFixed(0)}</span></td><td class="num"><span class="pill c">${p.q80.toFixed(0)}</span></td>
     <td class="num cond">${cm(c).toFixed(1)}</td><td><div class="l5" title="Últimos 5: ${p.last5.join(', ')}">${p.last5.map(v=>`<i class="${v?'':'z'}" style="height:${Math.max(3,v/mx*24)}px"></i>`).join('')}</div></td>

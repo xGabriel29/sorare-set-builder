@@ -68,6 +68,14 @@ def gql(query, variables=None, tries=4):
             time.sleep(3 * (i + 1))
 
 
+ASSETS = "https://assets.sorare.com/"
+
+
+def short(url):
+    """Guarda só o caminho das imagens do Sorare (o site junta o prefixo)."""
+    return url[len(ASSETS):] if url and url.startswith(ASSETS) else url
+
+
 def iso(dt):
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -81,7 +89,7 @@ def fetch_set():
 
 def fetch_games(set_slug, days):
     now = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
-    team = "... on Club{ slug name shortName }"
+    team = "... on Club{ slug name shortName pictureUrl }"
     parts = []
     for i in range(0, days, 2):
         a, b = now + timedelta(days=i), now + timedelta(days=i + 2)
@@ -102,8 +110,8 @@ def fetch_games(set_slug, days):
                     continue
                 games[g["id"]] = {
                     "id": g["id"], "t": g["date"], "lg": LEAGUE_NAME[lg], "lgSlug": lg,
-                    "home": {"s": g["homeTeam"]["slug"], "n": g["homeTeam"]["name"], "sn": g["homeTeam"].get("shortName")},
-                    "away": {"s": g["awayTeam"]["slug"], "n": g["awayTeam"]["name"], "sn": g["awayTeam"].get("shortName")},
+                    "home": {"s": g["homeTeam"]["slug"], "n": g["homeTeam"]["name"], "sn": g["homeTeam"].get("shortName"), "pic": short(g["homeTeam"].get("pictureUrl"))},
+                    "away": {"s": g["awayTeam"]["slug"], "n": g["awayTeam"]["name"], "sn": g["awayTeam"].get("shortName"), "pic": short(g["awayTeam"].get("pictureUrl"))},
                 }
     return sorted(games.values(), key=lambda g: g["t"])
 
@@ -119,7 +127,7 @@ def fetch_club_players(club_slugs):
 
 
 PQ = """query($s:[String!]){ players(slugs:$s){ ... on Player {
-  slug displayName position activeClub{ slug } playingStatus
+  slug displayName position avatarPictureUrl activeClub{ slug } playingStatus
   activeInjuries{ __typename } activeSuspensions{ __typename }
   anyFutureGameStats(first:2){ ... on PlayerGameStats { game{ id } footballPlayingStatusOdds{ starterOddsBasisPoints substituteOddsBasisPoints nonPlayingOddsBasisPoints reliability } } }
   a5: averageScore(type:LAST_FIVE_SO5_AVERAGE_SCORE)
@@ -176,7 +184,7 @@ def summarize(p):
             o = f["footballPlayingStatusOdds"]
             odds[f["game"]["id"]] = [o["starterOddsBasisPoints"], o["substituteOddsBasisPoints"], o["reliability"]]
     return {
-        "s": p["slug"], "n": p["displayName"], "p": pos, "c": (p.get("activeClub") or {}).get("slug"),
+        "s": p["slug"], "n": p["displayName"], "p": pos, "av": short(p.get("avatarPictureUrl")), "c": (p.get("activeClub") or {}).get("slug"),
         "ps": p.get("playingStatus"), "inj": bool(p.get("activeInjuries")), "sus": bool(p.get("activeSuspensions")),
         "l5": last5, "a5": rnd(p.get("a5")), "a15": rnd(p.get("a15")), "a40": rnd(p.get("a40")),
         "aa5": rnd(p.get("aa5")), "aa15": rnd(p.get("aa15")), "aa40": rnd(p.get("aa40")),
@@ -186,7 +194,7 @@ def summarize(p):
 
 
 GQ = """query($u:String!,$e:String!,$after:String){ user(slug:$u){ cards(first:100, after:$after, sport:FOOTBALL, customCardEditionName:$e){
-  nodes{ slug anyPlayer{ slug } } pageInfo{ endCursor hasNextPage } } } }"""
+  nodes{ slug pictureUrl anyPlayer{ slug } } pageInfo{ endCursor hasNextPage } } } }"""
 
 
 def fetch_gallery(user, editions):
@@ -195,7 +203,7 @@ def fetch_gallery(user, editions):
         after = None
         while True:
             c = gql(GQ, {"u": user, "e": e, "after": after})["user"]["cards"]
-            cards += [[n["slug"], n["anyPlayer"]["slug"], e] for n in c["nodes"] if n.get("anyPlayer")]
+            cards += [[n["slug"], n["anyPlayer"]["slug"], e, short(n.get("pictureUrl"))] for n in c["nodes"] if n.get("anyPlayer")]
             if not c["pageInfo"]["hasNextPage"]:
                 break
             after = c["pageInfo"]["endCursor"]
