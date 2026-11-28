@@ -1,6 +1,6 @@
 # Sorare Set Builder (futebol)
 
-Site para escolher equipas do modo **Sorare Set** (Hot Streaks): projeção de cada jogador com o modelo da escada decisiva + All-Around, odds dos jogos, % de titular, e um auto-builder que maximiza a probabilidade de cada equipa bater a meta do seu nível.
+Site para escolher equipas do modo **Sorare Set** (Hot Streaks): projeção de cada jogador com o modelo da escada decisiva + All-Around (ação a ação, ajustado ao que o adversário permite: passes, último terço, remates, volume de jogo), odds dos jogos, % de titular, e um auto-builder que maximiza a probabilidade de cada equipa bater a meta do seu nível.
 
 ## Como funciona
 
